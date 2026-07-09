@@ -7,46 +7,39 @@ Analysis of 110,188 orders from the Brazilian e-commerce platform Olist, analysi
 **Dashboard:** [View on Tableau Public](https://public.tableau.com/app/profile/danylo.uhrinovych/viz/Oliste-commerce_17828353152790/Dashboard2)
 
 
-
 ## Business Problem
 
-The logistics and marketing directors at Olist are facing declining review ratings and want to understand two things:
+I've decided to understand two problematic aspects of Olist's platform:
 
-1. Where are we losing customer loyalty — and how do delivery delays drive that loss?
-2. Which product categories have an unsustainable freight-to-price ratio that erodes unit economics?
+1. What can cause them losing customer loyalty and how do delivery delays can possibly affect that?
+2. Which product categories have an unsustainable freight-to-price ratio that ruins their profits?
 
 ## Dataset & Preparation
 
 The raw dataset was assembled from four tables joined on `order_id` and `product_id`:
 
-| Table | Description |
-|---|---|
-| `orders` | Order status and timestamps |
-| `order_items` | Price and freight value per item |
-| `order_reviews` | Customer review scores (1–5) |
-| `products` + translation file | Category names (translated PT → EN) |
+`orders` - Order status and timestamps 
+`order_items` - Price and freight value per item 
+`order_reviews` - Customer review scores
+ `products` + translation file - Category names (translated to english from portugese)
 
-**Cleaning steps:**
+**Cleaning process:**
 - 1,559 missing category names → filled with `"Unknown"`
-- 827 missing review scores → filled with median (5.0)
-- 1 missing carrier date → row dropped after imputation
-- All date fields converted to `datetime64` with UTC timezone
+- 827 missing review scores → filled with median
+- 1 missing carrier date - row dropped after imputation
 - Final clean dataset: **110,188 rows, 16 columns**
 
 **Key engineered feature:**
-```python
-delivery_delay_days = order_delivered_customer_date − order_estimated_delivery_date
-```
+`delivery_delay_days = order_delivered_customer_date − order_estimated_delivery_date`
 Negative = delivered earlier than promised. Positive = late.  
 Range in dataset: **−147 days to +188 days**.
 
----
 
 ## Analysis & Findings
 
 ### 1. Delivery Delays Collapse Review Scores
 
-Orders were segmented into 8 delay groups. The drop in average review score is immediate and severe — not gradual:
+Orders were segmented into 8 delay groups. The drop in average review score is not gradual, but harsh:
 
 | Delay Group | Orders | Avg Review Score |
 |---|---|---|
@@ -59,13 +52,13 @@ Orders were segmented into 8 delay groups. The drop in average review score is i
 | Critical delay (31–60 days) | 285 | **1.98** |
 | Extreme delay (60+ days) | 84 | **2.91** |
 
-**Key insight:** Review score falls from 4.2 to 2.7 after just 1–7 days of delay. There is no gradual decline — the damage happens at the first breach of the promised date. This suggests customers respond to the broken promise itself, not the magnitude of the delay.
+**Key insight:** Review score falls from 4.2 to 2.7 after just 1–7 days of delay. The damage happens at the first breach of the promised date. It may be possible because customers respond to the broken promise itself, not the amount of days delayed.
 
-The slight score recovery at extreme delays (60+ days, n=84) is likely a sampling artifact from the small group size and should not be interpreted as a positive trend.
+The slight score recovery at extreme delays (60+ days) is likely a sampling artifact from the small group size (84 orders) and should not be interpreted as a positive trend.
 
-### 2. Seasonal Spike in Delays — November 2017
+### 2. Seasonal Spike in Delays - November 2017
 
-The time series of monthly delay rates reveals a clear anomaly: the share of delayed orders peaked at **18.10% in November 2017**, more than double the surrounding months (7.32% in September, 6.35% in March 2018). This aligns with Brazil's Black Friday period and strongly suggests logistics capacity was overwhelmed by demand surge — a predictable, preventable failure.
+The time series of monthly delay rates reveals two clear anomalies: the share of delayed orders peaked firstly at **11.92% in November 2017**, more than 150% the surrounding months (3.90% in October 2017, 7.32% in December 2017). This aligns with Black Friday period and strongly suggests logistics capacity was overwhelmed by demand surge, a predictable failure.The second peak shows **18.10% delay rate in March 2018**, which connects with Brazil's post service Correios walkout.
 
 ### 3. Regional Delay Patterns
 
@@ -77,7 +70,7 @@ Northern and western states show systematically shorter delivery lead times rela
 | MA | −9.9 | 800 |
 | SE | −10.0 | 375 |
 
-States like SP (São Paulo, 46,440 orders) sit at −11.2 days — well-buffered but accounting for 42% of all volume, making it the highest absolute risk concentration.
+States like SP (São Paulo, 46,440 orders) sit at −11.2 days - well-buffered but accounting for 42% of all volume, making it the highest absolute risk concentration.
 
 ### 4. Freight/Price Ratio Anomalies by Category
 
@@ -92,11 +85,11 @@ Categories where freight cost represents a disproportionate share of item price 
 | signaling_and_security | **55.0%** | 197 |
 | telephony | **50.8%** | 4,430 |
 
-Electronics and telephony are particularly critical — high order volume combined with freight costs exceeding 50–68% of the item price makes these categories structurally unprofitable unless pricing or logistics contracts are renegotiated.
+Electronics and telephony are particularly critical - high order volume combined with freight costs exceeding 50–68% of the item price makes these categories structurally unprofitable unless pricing or logistics contracts are renegotiated.
 
 ### 5. Revenue at Risk
 
-Total revenue associated with delayed orders (delay group 4–8), segmented by group:
+Total revenue associated with delayed orders (delay group 4-8), segmented by group:
 
 | Delay Group | Revenue at Risk |
 |---|---|
@@ -107,34 +100,20 @@ Total revenue associated with delayed orders (delay group 4–8), segmented by g
 | Extreme delay (60+ days) | R$ 7,507 |
 | **Total** | **R$ 719,915** |
 
-This represents revenue transacted under conditions that demonstrably produce review scores below 3.0 — the threshold associated with customer churn risk.
+This represents revenue transacted under conditions that demonstrably produce review scores below 3.0 - the threshold associated with customer churn risk.
 
----
 
 ## Business Recommendations
 
 **For the logistics director:**
 - Prioritize SLA renegotiation for northeast states (AL, MA, SE) where delivery buffer is thinnest
 - Pre-position capacity ahead of November to prevent the seasonal spike seen in 2017 — the 18% delay rate in that month is a repeatable risk, not a one-off event
-- Flag the 7,263 orders annually that arrive with delays of 8+ days as the primary driver of score collapse (avg score 1.7) — these alone represent the reputational damage that's visible in aggregate ratings
+- Flag the 7,263 orders annually that arrive with delays of 8+ days as the primary driver of score collapse (avg score 1.7) - these alone represent the reputational damage that's visible in aggregate ratings
 
 **For the product/commercial team:**
-- Electronics and telephony require immediate freight cost review — at 68% freight-to-price ratio, customer acquisition through free shipping on these categories likely runs at a loss
+- Electronics and telephony require immediate freight cost review - at 68% freight-to-price ratio, customer acquisition through free shipping on these categories likely runs at a loss
 - dvds_blu_ray at 83.6% ratio with 61 orders is a candidate for category removal or mandatory freight surcharge
 
----
-
-## Repository Structure
-
-```
-├── notebook/
-│   └── E_comm_brazil.ipynb       # Full analysis: ETL, EDA, metrics
-├── data/
-│   └── olist_cleaned_for_bi.csv  # Export for Tableau (generated by notebook)
-└── README.md
-```
-
----
 
 ## Methodology Notes
 
