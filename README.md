@@ -117,7 +117,7 @@ This represents revenue transacted under conditions that demonstrably produce re
 
 ## Methodology Notes
 
-- Delivery delay is measured against the **promised** delivery date, not the carrier handoff date — this reflects the customer's actual experience
-- Revenue at risk is calculated as `SUM(price + freight_value)` per delay group, not projected lifetime value — figures are conservative
+- Delivery delay is measured against the **promised** delivery date, not the carrier handoff date - this reflects the customer's actual experience
+- Revenue at risk is calculated as `SUM(price + freight_value)` per delay group, not projected lifetime value - figures are conservative
 - Categories with fewer than 50 orders were excluded from freight ratio analysis to avoid misleading averages from low-volume outliers
-- The score recovery at 60+ day delays (avg 2.91 vs 1.71 for major delays) should not be interpreted as a positive finding — the group has only 84 orders and is statistically unreliable
+- The score recovery at 60+ day delays (avg 2.91 vs 1.71 for major delays) should not be interpreted as a positive finding - the group has only 84 orders and is statistically unreliable
